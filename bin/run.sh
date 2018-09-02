@@ -9,5 +9,6 @@ if [ ! $? -eq 0 ]; then
 fi
 
 BUILD_DIR=$PROJECT_DIR/build
+DATA_DIR=$PROJECT_DIR/data/
 
-$BUILD_DIR/game
+$BUILD_DIR/game $DATA_DIR

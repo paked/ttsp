@@ -1,5 +1,5 @@
-#define WINDOW_WIDTH 128
-#define WINDOW_HEIGHT 128
+#define WINDOW_WIDTH 768
+#define WINDOW_HEIGHT 768
 
 #define WINDOW_NAME "This Too Shall Pass"
 

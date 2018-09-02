@@ -20,6 +20,8 @@ SDL_GLContext glContext;
 
 Platform realPlatform = {0};
 
+char* dataPath = 0;
+
 uint32 keySDLToPlatform(SDL_KeyboardEvent event) {
   uint32 key = KEY_unknown;
   uint32 scancode = event.keysym.scancode;
@@ -43,7 +45,69 @@ uint32 keySDLToPlatform(SDL_KeyboardEvent event) {
   return key;
 }
 
+int sdl_loadFromFile(char *filename, void **buffer, MemoryIndex* size) {
+  char fname[MAX_PATH] = {0};
+
+  strcat(fname, dataPath);
+  strcat(fname, filename);
+
+  SDL_RWops *rw = SDL_RWFromFile(fname, "rb");
+
+  if (rw == 0) {
+    return 1;
+  }
+
+  *size = SDL_RWsize(rw);
+
+  // TODO(harrison): load into an asset specific file arena
+  char* buf = (char*) ALLOCATE_MEMORY_FUNC(*size + 1);
+
+  MemoryIndex readTotal = 0;
+  MemoryIndex readLast = 1;
+
+  char* read = buf;
+
+  while (readTotal < *size && readLast != 0) {
+    readLast = SDL_RWread(rw, read, 1, (*size - readTotal));
+    readTotal += readLast;
+
+    read += readLast; // advance memory buffer
+  }
+
+  SDL_RWclose(rw);
+
+  if (readTotal != *size) {
+    FREE_MEMORY_FUNC(buf);
+
+    logln("ERROR: Unable to read file...");
+
+    return 1;
+  }
+
+  buf[*size] = 0;
+
+  *buffer = buf;
+
+  return 0;
+}
+
 int main(int argc, char **argv) {
+  if (argc != 2) {
+    logln("Usage: ./game $DATA_PATH. Refer to provided platform specific run-script. $DATA_PATH must end in a slash.");
+
+    return 1;
+  }
+
+  dataPath = argv[1];
+
+  // HACK(harrison): make sure that provided path is a "directory", and in
+  // order to make future operations simpler ensure that it ends in a slash.
+  if (dataPath[strlen(dataPath) - 1] != '/') {
+    logln("ERROR: $DATA_PATH must end in a slash. Are you sure you're running through the run-script?");
+
+    return 1;
+  }
+
   if(SDL_Init(SDL_INIT_VIDEO) < 0) {
     logln("ERROR: Could not init SDL video");
 
@@ -98,6 +162,10 @@ int main(int argc, char **argv) {
   realPlatform.transientStorageSize = TRANSIENT_MEMORY_SIZE;
   realPlatform.transientStorage = ALLOCATE_MEMORY_FUNC(realPlatform.transientStorageSize);
 
+  realPlatform.loadFromFile = sdl_loadFromFile;
+  realPlatform.windowWidth = WINDOW_WIDTH;
+  realPlatform.windowHeight = WINDOW_WIDTH;
+
   if (game_init(&realPlatform) != 0) {
     logln("ERROR: could not init game!");
 
@@ -105,63 +173,65 @@ int main(int argc, char **argv) {
   }
 
   uint64 perfCounterFreq = SDL_GetPerformanceFrequency();
-	SDL_Event event;
-	while (!realPlatform.quit) {
-		realPlatform.time = SDL_GetTicks();
+  SDL_Event event;
+  while (!realPlatform.quit) {
+    realPlatform.time = SDL_GetTicks();
 
-		// Copy "now" key state into the last key state buffer, and reset the new key state
-		for (uint32 i = 0; i < MAX_KEY; i++) {
-			realPlatform.keyStateLast[i] = realPlatform.keyStateNow[i];
-		}
+    // Copy "now" key state into the last key state buffer, and reset the new key state
+    for (uint32 i = 0; i < MAX_KEY; i++) {
+      realPlatform.keyStateLast[i] = realPlatform.keyStateNow[i];
+    }
 
-		uint64 timeFrameStart = SDL_GetPerformanceCounter();
-		while (SDL_PollEvent(&event)) {
-			switch (event.type) {
-				case SDL_QUIT:
-					{
-						realPlatform.quit = true;
-					} break;
-				case SDL_WINDOWEVENT:
-					{
-						switch (event.window.event) {
-							case SDL_WINDOWEVENT_SIZE_CHANGED:
-								{
-									realPlatform.windowWidth = event.window.data1;
-									realPlatform.windowHeight = event.window.data2;
-								} break;
-						}
+    uint64 timeFrameStart = SDL_GetPerformanceCounter();
+    while (SDL_PollEvent(&event)) {
+      switch (event.type) {
+        case SDL_QUIT:
+          {
+            realPlatform.quit = true;
+          } break;
+        case SDL_WINDOWEVENT:
+          {
+            switch (event.window.event) {
+              case SDL_WINDOWEVENT_SIZE_CHANGED:
+                {
+                  realPlatform.windowWidth = event.window.data1;
+                  realPlatform.windowHeight = event.window.data2;
+                } break;
+            }
 
-					} break;
-				case SDL_KEYUP:
-				case SDL_KEYDOWN:
-					{
-						uint32 key = keySDLToPlatform(event.key);
+          } break;
+        case SDL_KEYUP:
+        case SDL_KEYDOWN:
+          {
+            uint32 key = keySDLToPlatform(event.key);
 
-						if (key == KEY_unknown) {
-							logln("Could not identify key!");
+            if (key == KEY_unknown) {
+              logln("Could not identify key!");
 
-							break;
-						}
+              break;
+            }
 
-						realPlatform.keyStateNow[key] = event.key.state == SDL_PRESSED;
-					} break;
-			}
-		}
+            realPlatform.keyStateNow[key] = event.key.state == SDL_PRESSED;
+          } break;
+      }
+    }
 
-		game_update();
+    game_update();
 
-		SDL_GL_SwapWindow(window);
+    SDL_GL_SwapWindow(window);
 
-		uint64 timeFrameEnd = SDL_GetPerformanceCounter();
-		uint64 timeElapsed = timeFrameEnd - timeFrameStart;
+    uint64 timeFrameEnd = SDL_GetPerformanceCounter();
+    uint64 timeElapsed = timeFrameEnd - timeFrameStart;
 
-		real64 deltaTime = ((((real64)timeElapsed) / (real64)perfCounterFreq));
-		// real64 fps = (real64)perfCounterFreq / (real64)timeElapsed;
+    real64 deltaTime = ((((real64)timeElapsed) / (real64)perfCounterFreq));
+    // real64 fps = (real64)perfCounterFreq / (real64)timeElapsed;
 
-		// printf("%f ms/f, %.02ff/s\n", deltaTime, fps);
+    // printf("%f ms/f, %.02ff/s\n", deltaTime, fps);
 
-		realPlatform.deltaTime = deltaTime;
-	}
+    realPlatform.deltaTime = deltaTime;
+  }
 
-	return 0;
+  game_clean();
+
+  return 0;
 }

@@ -25,7 +25,7 @@ echo "Building GLAD..."
 gcc -c -o glad.o -I$VENDOR_DIR/glad/include $VENDOR_DIR/glad/src/glad.c
 
 echo "Building game..."
-g++ -o game $SRC_DIR/platform_sdl_main.cpp -I$SRC_DIR glad.o -I$VENDOR_DIR/glad/include $SDL_FLAGS -ldl
+g++ -o game $SRC_DIR/platform_sdl_main.cpp -I$SRC_DIR glad.o -I$VENDOR_DIR/glad/include -I$VENDOR_DIR/HandmadeMath $SDL_FLAGS -ldl -Wall -Werror
 
 echo "Done!"
 

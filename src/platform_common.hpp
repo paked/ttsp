@@ -1,5 +1,7 @@
 #include <assert.h>
 
+#define MAX_PATH (128)
+
 #define log(...) fprintf(stderr, __VA_ARGS__)
 #define logln(fmt) fprintf(stderr, fmt "\n")
 #define logfln(fmt, ...) fprintf(stderr, fmt "\n", __VA_ARGS__)
@@ -61,6 +63,25 @@ enum {
   MAX_KEY
 };
 
+// TODO(harrison): move somewhere else?
+struct Rect {
+  real32 x, y;
+  real32 w, h;
+};
+
+Rect rect_init(real32 x, real32 y, real32 w, real32 h) {
+  Rect r;
+
+  r.x = x;
+  r.y = y;
+  r.w = w;
+  r.h = h;
+
+  return r;
+}
+
+typedef int (* LoadFromFileFunc)(char* fname, void** buffer, MemoryIndex* size);
+
 struct Platform {
   // Memory related things
   bool initialized;
@@ -86,4 +107,7 @@ struct Platform {
   // Window
   uint32 windowWidth;
   uint32 windowHeight;
+
+  // Functions
+  LoadFromFileFunc loadFromFile;
 };
