@@ -10,4 +10,4 @@ fi
 
 BUILD_DIR=$PROJECT_DIR/build
 
-$BUILD_DIR/basic
+$BUILD_DIR/game
