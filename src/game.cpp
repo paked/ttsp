@@ -39,7 +39,6 @@ void game_update() {
   assert(platform != 0);
 
   if (!platform->initialized) {
-
     platform->initialized = true;
   }
 
