@@ -24,25 +24,35 @@ VENDOR_DIR=$PROJECT_DIR/vendor
 
 SDL_FLAGS="$(sdl2-config --cflags --libs)"
 
-mkdir -p $BUILD_DIR
+GCC="gcc"
+GPP="g++ -Wall -Werror"
 
+START_TIME=$(date +%s)
+
+mkdir -p $BUILD_DIR
 pushd $BUILD_DIR
 
 echo "Building a basic SDL2 program..."
-g++ -o basic $SRC_DIR/basic.cpp $SDL_FLAGS
+$GPP -o basic $SRC_DIR/basic.cpp $SDL_FLAGS
 
 compileCheckError
 
 echo "Building GLAD..."
-gcc -c -o glad.o -I$VENDOR_DIR/glad/include $VENDOR_DIR/glad/src/glad.c
+$GCC -c -o glad.o -I$VENDOR_DIR/glad/include $VENDOR_DIR/glad/src/glad.c
 
 compileCheckError
 
 echo "Building game..."
-g++ -o game $SRC_DIR/platform_sdl_main.cpp -I$SRC_DIR glad.o -I$VENDOR_DIR/glad/include -I$VENDOR_DIR/HandmadeMath $SDL_FLAGS -ldl -Wall -Werror
+
+$GPP -o game $SRC_DIR/platform_sdl_main.cpp -I$SRC_DIR glad.o -I$VENDOR_DIR/glad/include -I$VENDOR_DIR/HandmadeMath $SDL_FLAGS -ldl
 
 compileCheckError
 
 echo "Done!"
+
+END_TIME=$(date +%s)
+TOTAL_TIME=$(expr $END_TIME - $START_TIME)
+
+echo "Took to build project: $TOTAL_TIME"
 
 popd
