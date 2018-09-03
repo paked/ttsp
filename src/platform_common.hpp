@@ -63,23 +63,6 @@ enum {
   MAX_KEY
 };
 
-// TODO(harrison): move somewhere else?
-struct Rect {
-  real32 x, y;
-  real32 w, h;
-};
-
-Rect rect_init(real32 x, real32 y, real32 w, real32 h) {
-  Rect r;
-
-  r.x = x;
-  r.y = y;
-  r.w = w;
-  r.h = h;
-
-  return r;
-}
-
 typedef int (* LoadFromFileFunc)(char* fname, void** buffer, MemoryIndex* size);
 
 struct Platform {

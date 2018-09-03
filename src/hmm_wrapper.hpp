@@ -35,3 +35,17 @@ typedef hmm_quaternion quat;
 #define vec4Normalize(v) HMM_NormalizeVec4(v)
 
 #define vec3LengthSquared(v) HMM_LengthSquaredVec3(v)
+
+#define vec3_white (vec3(255.0f, 255.0f, 255.0f))
+#define vec3_black (vec3(0.0f, 0.0f, 0.0f))
+
+// More generic math stuff
+inline int32 math_signi(int32 v) {
+  if (v > 0) {
+    return 1;
+  } else if (v == 0) {
+    return 0;
+  }
+
+  return -1;
+}

@@ -137,3 +137,7 @@ void draw_rectangle(Rect rect, vec4 color) {
     draw_setShader(returnTo);
   }
 }
+
+void draw_rectangle(Rect rect, vec3 color) {
+  draw_rectangle(rect, vec4(color.x, color.y, color.z, 1.0f));
+}
