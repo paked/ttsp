@@ -43,6 +43,10 @@ int game_init(Platform* p) {
   return 0;
 }
 
+#define PLAYER_DRAG (0.80f)
+#define PLAYER_ACCEL (30.0f)
+#define PLAYER_MAX_SPEED (400.0f)
+#define PLAYER_REACTIVITY (0.7f)
 void game_update() {
   assert(platform != 0);
 
@@ -59,20 +63,35 @@ void game_update() {
   }
 
   {
-    real32 amount = 0.0f;
+    int direction = 0;
     if (keyDown(KEY_a)) {
-      amount = -1.0f;
+      direction = -1.0f;
     } else if (keyDown(KEY_d)) {
-      amount = 1.0f;
+      direction = 1.0f;
+    } else {
+      g->playerSpeed *= PLAYER_DRAG;
     }
 
-    amount *= 300.0f * getDeltaTime();
-    actor_moveX(&g->player, amount, g->ground);
+    int sign = math_signi(g->playerSpeed);
+    if (direction != 0) {
+      real32 accel = PLAYER_ACCEL * direction;
+
+      g->playerSpeed += accel;
+
+      if (direction != sign) {
+        g->playerSpeed += accel * PLAYER_REACTIVITY;
+      }
+    }
+
+    if (fabs(g->playerSpeed) > PLAYER_MAX_SPEED) {
+      g->playerSpeed = PLAYER_MAX_SPEED * sign;
+    }
+
+    actor_moveX(&g->player, g->playerSpeed * getDeltaTime(), g->ground);
   }
 
-
   {
-    real32 amount = 100.0f * getDeltaTime();
+    real32 amount = 300.0f * getDeltaTime();
     actor_moveY(&g->player, amount, g->ground);
   }
 
