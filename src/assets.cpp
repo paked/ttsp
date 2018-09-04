@@ -1,5 +1,9 @@
+struct Texture {
+  GLuint id;
+};
+
 struct Shader {
-    GLuint id;
+  GLuint id;
 };
 
 Shader shader_init(void* vert, uint32 vertLen, void* frag, uint32 fragLen) {

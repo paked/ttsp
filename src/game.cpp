@@ -27,6 +27,9 @@ Platform* platform = 0;
 #define keyDown(k) (platform->keyStateNow[k])
 #define keyUp(k) (!platform->keyStateNow[k])
 
+#define GAME_VIRTUAL_WIDTH (320)
+#define GAME_VIRTUAL_HEIGHT (180)
+
 #include <physics.cpp>
 #include <assets.cpp>
 #include <draw.cpp>
@@ -43,8 +46,8 @@ int game_init(Platform* p) {
   return 0;
 }
 
-#define PLAYER_DRAG (0.80f)
-#define PLAYER_ACCEL (30.0f)
+#define PLAYER_DRAG (0.70f)
+#define PLAYER_ACCEL (60.0f)
 #define PLAYER_MAX_SPEED (400.0f)
 #define PLAYER_REACTIVITY (0.7f)
 void game_update() {
@@ -56,8 +59,9 @@ void game_update() {
 
   if (!platform->initialized) {
     // Initialize GameData in here...
-    g->player.collider = aabb_init(getWindowWidth()/2 - 5, 500, 10, 20);
-    g->ground = aabb_init(20, getWindowHeight() - 70, getWindowWidth() - 40, 60);
+    g->player.collider = aabb_init(0, 0, 8, 12);
+
+    g->ground = aabb_init(0, GAME_VIRTUAL_HEIGHT-50, GAME_VIRTUAL_WIDTH, 10);
 
     platform->initialized = true;
   }
@@ -96,14 +100,19 @@ void game_update() {
   }
 
   // Render
+  draw_virtual_begin();
+  {
+    Rect ground = rect_init(g->ground.x, g->ground.y, g->ground.w, g->ground.h);
+    draw_rectangle(ground, vec3_white);
+
+    Rect player = rect_init(g->player.collider.x, g->player.collider.y, g->player.collider.w, g->player.collider.h);
+    draw_rectangle(player, vec3_white);
+  }
+  draw_virtual_end();
+
   draw_begin();
 
-  {
-    Rect player = rect_init(g->player.collider.x, g->player.collider.y, g->player.collider.w, g->player.collider.h);
-    Rect ground = rect_init(g->ground.x, g->ground.y, g->ground.w, g->ground.h);
-    draw_rectangle(player, vec3_white);
-    draw_rectangle(ground, vec3_white);
-  }
+  draw_sprite(rect_init(0, 0, getWindowWidth(), getWindowHeight()), draw.virtualTex);
 }
 
 void game_clean() {

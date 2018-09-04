@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
 
   realPlatform.loadFromFile = sdl_loadFromFile;
   realPlatform.windowWidth = WINDOW_WIDTH;
-  realPlatform.windowHeight = WINDOW_WIDTH;
+  realPlatform.windowHeight = WINDOW_HEIGHT;
 
   if (game_init(&realPlatform) != 0) {
     logln("ERROR: could not init game!");
