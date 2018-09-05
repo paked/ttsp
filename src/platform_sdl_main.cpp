@@ -162,6 +162,11 @@ int main(int argc, char **argv) {
   realPlatform.transientStorageSize = TRANSIENT_MEMORY_SIZE;
   realPlatform.transientStorage = ALLOCATE_MEMORY_FUNC(realPlatform.transientStorageSize);
 
+  // NOTE(harrison): Our allocator does not zero out our memory for us, so we need to do it ourself
+  // TODO(harrison): figure out if this is prevalent enough for us to write a 'custom allocator'
+  memset(realPlatform.permanentStorage, 0, realPlatform.permanentStorageSize);
+  memset(realPlatform.transientStorage, 0, realPlatform.transientStorageSize);
+
   realPlatform.loadFromFile = sdl_loadFromFile;
   realPlatform.windowWidth = WINDOW_WIDTH;
   realPlatform.windowHeight = WINDOW_HEIGHT;
