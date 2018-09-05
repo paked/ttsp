@@ -84,7 +84,7 @@ struct Platform {
   uint32 time;
   real32 deltaTime;
 
-  real64 currentFPS;
+  real32 currentFPS;
   uint32 targetFPS;
 
   // Window

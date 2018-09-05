@@ -170,6 +170,8 @@ int main(int argc, char **argv) {
   realPlatform.loadFromFile = sdl_loadFromFile;
   realPlatform.windowWidth = WINDOW_WIDTH;
   realPlatform.windowHeight = WINDOW_HEIGHT;
+  realPlatform.currentFPS = 0;
+  realPlatform.targetFPS = 60;
 
   if (game_init(&realPlatform) != 0) {
     logln("ERROR: could not init game!");
@@ -229,9 +231,9 @@ int main(int argc, char **argv) {
     uint64 timeElapsed = timeFrameEnd - timeFrameStart;
 
     real64 deltaTime = ((((real64)timeElapsed) / (real64)perfCounterFreq));
-    // real64 fps = (real64)perfCounterFreq / (real64)timeElapsed;
+    real32 fps = (real32)perfCounterFreq / (real32)timeElapsed;
 
-    // printf("%f ms/f, %.02ff/s\n", deltaTime, fps);
+    realPlatform.currentFPS = fps;
 
     realPlatform.deltaTime = deltaTime;
   }

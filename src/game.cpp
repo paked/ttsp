@@ -19,6 +19,7 @@ Platform* platform = 0;
 
 // Macros to make interacting with the platform easier
 #define mustLoadFromFile(fname, buf, sz) (assert(platform->loadFromFile(fname, buf, sz) == 0))
+#define getCurrentFPS() (platform->currentFPS)
 #define getWindowWidth() (platform->windowWidth)
 #define getWindowHeight() (platform->windowHeight)
 #define getDeltaTime() (platform->deltaTime)
@@ -46,9 +47,9 @@ int game_init(Platform* p) {
   return 0;
 }
 
-#define PLAYER_DRAG (0.70f)
-#define PLAYER_ACCEL (60.0f)
-#define PLAYER_MAX_SPEED (400.0f)
+#define PLAYER_DRAG (0.50f)
+#define PLAYER_ACCEL (24.0f)
+#define PLAYER_MAX_SPEED (60.0f)
 #define PLAYER_REACTIVITY (0.7f)
 void game_update() {
   assert(platform != 0);
@@ -95,8 +96,9 @@ void game_update() {
   }
 
   {
-    real32 amount = 300.0f * getDeltaTime();
-    actor_moveY(&g->player, amount, g->ground);
+    real32 amount = 300.0f;
+
+    actor_moveY(&g->player, amount * getDeltaTime(), g->ground);
   }
 
   // Render
@@ -112,7 +114,9 @@ void game_update() {
 
   draw_begin();
 
-  draw_sprite(rect_init(0, 0, getWindowWidth(), getWindowHeight()), draw.virtualTex);
+  {
+    draw_sprite(rect_init(0, 0, getWindowWidth(), getWindowHeight()), draw.virtualTex);
+  }
 }
 
 void game_clean() {
