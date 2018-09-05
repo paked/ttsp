@@ -131,7 +131,7 @@ void draw_virtual_begin() {
   glClear(GL_COLOR_BUFFER_BIT);
 
   draw.view = mat4d(1.0f);
-  draw.projection = mat4Orthographic(0, GAME_VIRTUAL_WIDTH, GAME_VIRTUAL_HEIGHT, 0, -1.0f, 1.0f);
+  draw.projection = mat4Orthographic(0, GAME_VIRTUAL_WIDTH, 0, GAME_VIRTUAL_HEIGHT, -1.0f, 1.0f);
 }
 
 void draw_virtual_end() {
