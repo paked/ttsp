@@ -98,6 +98,14 @@ void game_update() {
   {
     real32 amount = 300.0f;
 
+    if (keyJustDown(KEY_space)) {
+      g->jumpAccel = -600.0f;
+    }
+
+    amount += g->jumpAccel;
+
+    g->jumpAccel *= 0.95f;
+
     actor_moveY(&g->player, amount * getDeltaTime(), g->ground);
   }
 

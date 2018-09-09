@@ -57,6 +57,7 @@ void actor_moveY(Actor* actor, real32 amount, AABB ground) {
 struct GameData {
   Actor player;
   real32 playerSpeed;
+  real32 jumpAccel;
 
   AABB ground;
 };
