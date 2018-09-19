@@ -4,3 +4,6 @@
 [submodule "vendor/HandmadeMath"]
 	path = vendor/HandmadeMath
 	url = https://github.com/paked/Handmade-Math.git
+[submodule "vendor/us"]
+	path = vendor/us
+	url = git@github.com:paked/us.git

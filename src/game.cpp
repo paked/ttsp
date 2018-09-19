@@ -64,6 +64,8 @@ void game_update() {
 
     g->ground = aabb_init(0, GAME_VIRTUAL_HEIGHT-50, GAME_VIRTUAL_WIDTH, 10);
 
+    g->level = level_initAndLoad(&g->level, "map/map.csv");
+
     platform->initialized = true;
   }
 

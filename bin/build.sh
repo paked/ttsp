@@ -44,7 +44,7 @@ compileCheckError
 
 echo "Building game..."
 
-$GPP -o game $SRC_DIR/platform_sdl_main.cpp -I$SRC_DIR glad.o -I$VENDOR_DIR/glad/include -I$VENDOR_DIR/HandmadeMath $SDL_FLAGS -ldl
+$GPP -o game $SRC_DIR/platform_sdl_main.cpp -I$VENDOR_DIR/us -I$SRC_DIR glad.o -I$VENDOR_DIR/glad/include -I$VENDOR_DIR/HandmadeMath $SDL_FLAGS -ldl
 
 compileCheckError
 
