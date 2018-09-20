@@ -64,16 +64,12 @@ void game_update() {
     // Initialize GameData in here...
     g->player.collider = aabb_init(0, 0, 8, 12);
 
-    g->ground = aabb_init(0, GAME_VIRTUAL_HEIGHT-50, GAME_VIRTUAL_WIDTH, 10);
-
     memoryArena_init(&g->memoryArena,
         platform->permanentStorageSize - sizeof(GameData),
         (uint8*) platform->permanentStorage + sizeof(GameData));
 
-    level_load(&g->memoryArena);
-
-    logfln("%p", g->memoryArena.first);
-
+    level_init(&g->level, &g->memoryArena);
+    level_load(&g->level);
 
     platform->initialized = true;
   }
@@ -103,51 +99,49 @@ void game_update() {
       g->playerSpeed = PLAYER_MAX_SPEED * sign;
     }
 
-    actor_moveX(&g->player, g->playerSpeed * getDeltaTime(), g->ground);
+    actor_moveX(&g->player, g->playerSpeed * getDeltaTime(), &g->level);
   }
 
   {
-    real32 amount = 300.0f;
+    real32 amount = 200.0f;
 
     if (keyJustDown(KEY_space)) {
-      g->jumpAccel = -600.0f;
+      g->jumpAccel = -400.0f;
     }
 
     amount += g->jumpAccel;
 
     g->jumpAccel *= 0.95f;
 
-    actor_moveY(&g->player, amount * getDeltaTime(), g->ground);
+    actor_moveY(&g->player, amount * getDeltaTime(), &g->level);
   }
 
   // Render
   draw_virtual_begin();
   {
-    /*
-    Rect ground = rect_init(g->ground.x, g->ground.y, g->ground.w, g->ground.h);
-    draw_rectangle(ground, vec3_white);
-*/
 
     Rect player = rect_init(g->player.collider.x, g->player.collider.y, g->player.collider.w, g->player.collider.h);
     draw_rectangle(player, vec3_white);
 
     Rect tile = rect_init(0, 0, 0, 0);
 
-    LevelChunk* chunk = (LevelChunk*) g->memoryArena.first->start;
-    for (int y = 0; y < chunk->height; y++) {
-      for (int x = 0; x < chunk->width; x++) {
-        int* c = chunk->data + y * chunk->width + x;
+    for (MemoryBlock* block = g->level.arena->first; block != 0; block = block->next) {
+      LevelChunk* chunk = (LevelChunk*) block->start;
+      for (int y = 0; y < chunk->height; y++) {
+        for (int x = 0; x < chunk->width; x++) {
+          int* c = chunk->data + y * chunk->width + x;
 
-        if (*c < 0) {
-          continue;
+          if (*c < 0) {
+            continue;
+          }
+
+          tile.x = (chunk->i * CHUNK_WIDTH + x) * 8;
+          tile.y = y * 8;
+          tile.w = 8;
+          tile.h = 8;
+
+          draw_rectangle(tile, vec3(255.0f, 0.0f, 255.0f));
         }
-
-        tile.x = x * 8;
-        tile.y = y * 8;
-        tile.w = 8;
-        tile.h = 8;
-
-        draw_rectangle(tile, vec3(255.0f, 0.0f, 255.0f));
       }
     }
   }

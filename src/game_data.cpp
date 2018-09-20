@@ -4,7 +4,7 @@ struct Actor {
   vec2 remainder;
 };
 
-void actor_moveX(Actor* actor, real32 amount, AABB ground) {
+void actor_moveX(Actor* actor, real32 amount, Level* level) {
   actor->remainder.x += amount;
 
   int32 move = (int) floorf(actor->remainder.x);
@@ -17,7 +17,7 @@ void actor_moveX(Actor* actor, real32 amount, AABB ground) {
       AABB r = actor->collider;
       r.x += sign;
 
-      if (!physics_isOverlapping(r, ground)) {
+      if (!level_isOverlapping(level, r)) {
         actor->collider.x += sign;
         move -= sign;
 
@@ -29,7 +29,7 @@ void actor_moveX(Actor* actor, real32 amount, AABB ground) {
   }
 }
 
-void actor_moveY(Actor* actor, real32 amount, AABB ground) {
+void actor_moveY(Actor* actor, real32 amount, Level* level) {
   actor->remainder.y += amount;
 
   int32 move = (int) floorf(actor->remainder.y);
@@ -42,7 +42,7 @@ void actor_moveY(Actor* actor, real32 amount, AABB ground) {
       AABB r = actor->collider;
       r.y += sign;
 
-      if (!physics_isOverlapping(r, ground)) {
+      if (!level_isOverlapping(level, r)) {
         actor->collider.y += sign;
         move -= sign;
 
@@ -59,7 +59,7 @@ struct GameData {
   real32 playerSpeed;
   real32 jumpAccel;
 
-  AABB ground;
+  Level level;
 
   MemoryArena memoryArena;
 };
