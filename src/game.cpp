@@ -140,7 +140,7 @@ void game_update() {
           tile.w = 8;
           tile.h = 8;
 
-          draw_rectangle(tile, vec3(255.0f, 0.0f, 255.0f));
+          draw_rectangle(tile, vec3_white);
         }
       }
     }
