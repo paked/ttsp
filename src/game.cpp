@@ -29,12 +29,14 @@ Platform* platform = 0;
 #define keyUp(k) (!platform->keyStateNow[k])
 
 #define GAME_VIRTUAL_WIDTH (320)
-#define GAME_VIRTUAL_HEIGHT (180)
+#define GAME_VIRTUAL_HEIGHT (184)
 
 #include <physics.cpp>
 #include <assets.cpp>
 #include <draw.cpp>
+#include <memory_arena.hpp>
 
+#include <level.cpp>
 #include <game_data.cpp>
 
 int game_init(Platform* p) {
@@ -64,7 +66,14 @@ void game_update() {
 
     g->ground = aabb_init(0, GAME_VIRTUAL_HEIGHT-50, GAME_VIRTUAL_WIDTH, 10);
 
-    g->level = level_initAndLoad(&g->level, "map/map.csv");
+    memoryArena_init(&g->memoryArena,
+        platform->permanentStorageSize - sizeof(GameData),
+        (uint8*) platform->permanentStorage + sizeof(GameData));
+
+    level_load(&g->memoryArena);
+
+    logfln("%p", g->memoryArena.first);
+
 
     platform->initialized = true;
   }
@@ -114,11 +123,33 @@ void game_update() {
   // Render
   draw_virtual_begin();
   {
+    /*
     Rect ground = rect_init(g->ground.x, g->ground.y, g->ground.w, g->ground.h);
     draw_rectangle(ground, vec3_white);
+*/
 
     Rect player = rect_init(g->player.collider.x, g->player.collider.y, g->player.collider.w, g->player.collider.h);
     draw_rectangle(player, vec3_white);
+
+    Rect tile = rect_init(0, 0, 0, 0);
+
+    LevelChunk* chunk = (LevelChunk*) g->memoryArena.first->start;
+    for (int y = 0; y < chunk->height; y++) {
+      for (int x = 0; x < chunk->width; x++) {
+        int* c = chunk->data + y * chunk->width + x;
+
+        if (*c < 0) {
+          continue;
+        }
+
+        tile.x = x * 8;
+        tile.y = y * 8;
+        tile.w = 8;
+        tile.h = 8;
+
+        draw_rectangle(tile, vec3(255.0f, 0.0f, 255.0f));
+      }
+    }
   }
   draw_virtual_end();
 

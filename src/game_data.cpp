@@ -60,4 +60,6 @@ struct GameData {
   real32 jumpAccel;
 
   AABB ground;
+
+  MemoryArena memoryArena;
 };
