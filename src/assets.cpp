@@ -19,8 +19,6 @@ Shader shader_init(void* vert, uint32 vertLen, void* frag, uint32 fragLen) {
   {
     const char* code = (char*) vert;
 
-    logfln("INFO: compiling vert shader: '%s'", code);
-
     glShaderSource(vertShaderID, 1, &code, 0);
     glCompileShader(vertShaderID);
   }
@@ -42,8 +40,6 @@ Shader shader_init(void* vert, uint32 vertLen, void* frag, uint32 fragLen) {
 
   {
     const char* code = (char*) frag;
-
-    logfln("INFO: compiling vert shader: '%s'", code);
 
     glShaderSource(fragShaderID, 1, &code, 0);
     glCompileShader(fragShaderID);

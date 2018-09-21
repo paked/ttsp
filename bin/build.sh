@@ -23,17 +23,23 @@ SRC_DIR=$PROJECT_DIR/src
 VENDOR_DIR=$PROJECT_DIR/vendor
 
 SDL_FLAGS="$(sdl2-config --cflags --libs)"
+USLIB_FLAGS="-I$VENDOR_DIR/us"
 
 GCC="gcc"
-GPP="g++ -Wall -Werror"
+GPP="g++ -Wall -Werror -std=c++11"
 
 START_TIME=$(date +%s)
 
 mkdir -p $BUILD_DIR
 pushd $BUILD_DIR
 
-echo "Building a basic SDL2 program..."
-$GPP -o basic $SRC_DIR/basic.cpp $SDL_FLAGS
+# echo "Building a basic SDL2 program..."
+# $GPP -o basic $SRC_DIR/test/basic.cpp $SDL_FLAGS
+#
+# compileCheckError
+
+echo "Building basic SDL2 audio program..."
+$GPP -o audio $SRC_DIR/test/audio.cpp $SDL_FLAGS $USLIB_FLAGS
 
 compileCheckError
 
