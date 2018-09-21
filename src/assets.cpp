@@ -196,3 +196,116 @@ void shader_clean(Shader* shader) {
   glDeleteProgram(shader->id);
   shader->id = 0;
 }
+
+#define RIFF_CODE(a, b, c, d) (((uint32)(a) << 0) | ((uint32)(b) << 8) | ((uint32)(c) << 16) | ((uint32)(d) << 24))
+enum
+{
+  WAVEChunkID_fmt = RIFF_CODE('f', 'm', 't', ' '),
+  WAVEChunkID_data = RIFF_CODE('d', 'a', 't', 'a'),
+  WAVEChunkID_RIFF = RIFF_CODE('R', 'I', 'F', 'F'),
+  WAVEChunkID_WAVE = RIFF_CODE('W', 'A', 'V', 'E'),
+};
+
+// We need to make sure that all of these structs are preserved and not
+// modified by the compiler.
+#pragma pack(push)
+
+struct WAVEHeader {
+  uint32 riffID;
+  uint32 size;
+  uint32 waveID;
+};
+
+#define WAVE_FORMAT_PCM (0x0001)
+
+struct WAVEFMT {
+  uint32 id;
+  uint32 size;
+
+  uint16 wFormatTag;
+  uint16 nChannels;
+  uint32 nSamplesPerSec;
+  uint32 nAvgBytesPerSec;
+  uint16 nBlockAlign;
+  uint16 wBitsPerSample;
+  uint16 cbSize;
+  uint16 wValidBitsPerSample;
+  uint32 dwChannelMask;
+
+  uint8 subFormat[16];
+};
+
+struct WAVEChunk {
+  uint32 id;
+  uint32 size;
+};
+
+#pragma pack(pop)
+
+struct Sound {
+  int16* data;
+};
+
+Sound sound_init(void* data, psize len) {
+  Sound s = {0};
+
+  WAVEHeader* header = (WAVEHeader*) data;
+
+  assert(header->riffID == WAVEChunkID_RIFF);
+  assert(header->waveID == WAVEChunkID_WAVE);
+
+  uint8* next = ((uint8*) header + sizeof(WAVEHeader));
+
+  psize advance = 0;
+  while (((psize)next - (psize) header) < len) {
+    advance = 0;
+
+    WAVEChunk* chunk = (WAVEChunk*) next;
+
+    switch (chunk->id) {
+      case WAVEChunkID_fmt:
+        {
+          logln("Found FMT");
+
+          WAVEFMT* fmt = (WAVEFMT*) next;
+
+          assert(fmt->wFormatTag == WAVE_FORMAT_PCM);
+          assert(fmt->nChannels == 2);
+          assert(fmt->nSamplesPerSec == 48000);
+          assert(fmt->wBitsPerSample == 16);
+          assert(fmt->nBlockAlign == (sizeof(int16)*fmt->nChannels));
+
+          advance = sizeof(*chunk) + fmt->size;
+        } break;
+      case WAVEChunkID_data:
+        {
+          logln("Found data");
+
+          advance = sizeof(chunk->id) + chunk->size;
+        } break;
+      default:
+        {
+          logln("Found other");
+
+          advance = sizeof(chunk->id) + chunk->size;
+        } break;
+    }
+
+    next += advance;
+  }
+
+  return s;
+}
+
+Sound sound_load(const char* name) {
+  Sound s = {0};
+
+  psize len = 0;
+  void* data;
+
+  mustLoadFromFile((char*) name, &data, &len);
+
+  s = sound_init(data, len);
+
+  return s;
+}

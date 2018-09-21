@@ -61,6 +61,10 @@ void game_update() {
   GameData* g = (GameData*) platform->permanentStorage;
 
   if (!platform->initialized) {
+    Sound s = sound_load("sound/church.wav");
+
+    assert(s.data != 0);
+
     // Initialize GameData in here...
     g->player.collider = aabb_init(0, 0, 8, 12);
 
