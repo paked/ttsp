@@ -1,6 +1,8 @@
 #include <SDL.h>
 #include <stdio.h>
 
+#define SIN_FREQ (220.0f)
+
 SDL_AudioDeviceID deviceID = 0;
 SDL_AudioSpec wavSpec = {0};
 
@@ -8,12 +10,11 @@ Uint32 wavLength;
 Uint8* wavBuffer;
 Uint8* wavHead;
 
-int sinBufferIndex = 0;
-int sinBufferSize = 0;
-Sint16* sinBuffer = 0;
+int sampleBufferIndex = 0;
+int sampleBufferSize = 0;
+Sint16* sampleBuffer = 0;
 
 void audioCallback(void* userdata, Uint8* stream, int len) {
-  /*
   if (wavLength == 0) {
     printf("Done!\n");
 
@@ -34,21 +35,32 @@ void audioCallback(void* userdata, Uint8* stream, int len) {
   wavLength -= (Uint32) len;
 
   printf("wavLength: %d\n", wavLength);
-  printf("len: %d\n", len);*/
+  printf("len: %d\n", len);
+
+  // Add sin wave to the mix
 
   len /= 2;
   Sint16* buf = (Sint16*) stream;
 
   for (int i = 0; i < len; i += 2) {
-    printf("audio?\n");
-    Sint16 v = sinBuffer[sinBufferIndex % sinBufferSize];
+    Sint16 left = 0;
+    {
+      int index = sampleBufferIndex % sampleBufferSize;
 
-    printf("%d\n", (int) v);
+      left = sampleBuffer[index];
+      sampleBufferIndex += 1;
+    }
 
-    buf[i] = v;
-    buf[i + 1] = v;
+    Sint16 right = 0;
+    {
+      int index = sampleBufferIndex % sampleBufferSize;
 
-    sinBufferIndex += 1;
+      right = sampleBuffer[index];
+      sampleBufferIndex += 1;
+    }
+
+    buf[i] += left;
+    buf[i + 1] += right;
   }
 }
 
@@ -71,24 +83,25 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  int samplesPerSecond = wavSpec.freq;
+  // Generate sine wave
+  {
+    int oneCycleLength = wavSpec.freq / SIN_FREQ;
 
-  sinBufferSize = 2 * samplesPerSecond;
-  // `samplesPerSecond` for each channel (ie. 2)
-  sinBuffer = (Sint16*) malloc(sinBufferSize);
+    // 2 channels of samplesPerSecond length
+    sampleBufferSize = 2 * oneCycleLength;
 
-  float phase = 0;
-  float phaseIncrement = samplesPerSecond/400.0f;
+    sampleBuffer = (Sint16*) malloc(sampleBufferSize);
 
-  for (int i = 0; i < samplesPerSecond; i++) {
-    Sint16 v = 6000 * sin(2.0f * 3.1415 * i * wavSpec.freq / 200);
+    float phase = 0;
 
-    printf("%d\n", (int) v);
+    for (int i = 0; i < oneCycleLength; i++) {
+      Sint16 v = 6000 * sinf((float) i / oneCycleLength * M_PI);
 
-    sinBuffer[i*2] = v;
-    sinBuffer[i*2 + 1] = v;
+      sampleBuffer[i * 2] = v;
+      sampleBuffer[i * 2 + 1] = v;
 
-    phase += phaseIncrement;
+      phase += SIN_FREQ;
+    }
   }
 
   SDL_PauseAudioDevice(deviceID, 0);
