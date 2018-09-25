@@ -39,12 +39,16 @@ Platform* platform = 0;
 #include <level.cpp>
 #include <game_data.cpp>
 
+Sound exampleSound = {0};
+
 int game_init(Platform* p) {
   platform = p;
 
   draw_init();
 
   draw.clear = vec3_black;
+
+  exampleSound = sound_load("sound/church.wav");
 
   return 0;
 }
@@ -61,10 +65,6 @@ void game_update() {
   GameData* g = (GameData*) platform->permanentStorage;
 
   if (!platform->initialized) {
-    Sound s = sound_load("sound/church.wav");
-
-    assert(s.data != 0);
-
     // Initialize GameData in here...
     g->player.collider = aabb_init(0, 0, 8, 12);
 
@@ -162,4 +162,23 @@ void game_clean() {
   draw_clean();
 
   platform = 0;
+}
+
+void game_sound(void* userdata, uint8* stream, int len) {
+  if (exampleSound.len == 0) {
+    logln("Finished playing sound...");
+
+    memset(stream, 0, len);
+
+    return;
+  }
+
+  if ((uint32) len > exampleSound.len) {
+    len = exampleSound.len;
+  }
+
+  memcpy(stream, exampleSound.head, len);
+
+  exampleSound.head += len;
+  exampleSound.len -= (uint32) len;
 }

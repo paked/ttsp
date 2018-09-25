@@ -15,6 +15,9 @@
 #define ALLOCATE_MEMORY_FUNC malloc
 #define FREE_MEMORY_FUNC free
 
+SDL_AudioDeviceID audioDeviceID = 0;
+SDL_AudioSpec audioSpec = {0};
+
 SDL_Window *window;
 SDL_GLContext glContext;
 
@@ -108,8 +111,8 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  if(SDL_Init(SDL_INIT_VIDEO) < 0) {
-    logln("ERROR: Could not init SDL video");
+  if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+    logln("ERROR: Could not init SDL video or video");
 
     return 1;
   }
@@ -167,6 +170,24 @@ int main(int argc, char **argv) {
   memset(realPlatform.permanentStorage, 0, realPlatform.permanentStorageSize);
   memset(realPlatform.transientStorage, 0, realPlatform.transientStorageSize);
 
+  logln("Initialised graphics...");
+
+  audioSpec.freq = 48000;
+  audioSpec.format = AUDIO_S16;
+  audioSpec.channels = 2;
+  audioSpec.samples = 4096;
+
+  audioSpec.callback = game_sound;
+
+  audioDeviceID = SDL_OpenAudioDevice(0, 0, &audioSpec, 0, 0);
+  if (audioDeviceID == 0) {
+    logln("ERROR: could not create audio device");
+
+    return 1;
+  }
+
+  logln("Initialised audio...");
+
   realPlatform.loadFromFile = sdl_loadFromFile;
   realPlatform.windowWidth = WINDOW_WIDTH;
   realPlatform.windowHeight = WINDOW_HEIGHT;
@@ -179,6 +200,10 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  // Play audio
+  SDL_PauseAudioDevice(audioDeviceID, 0);
+
+  // Start game loop
   uint64 perfCounterFreq = SDL_GetPerformanceFrequency();
   SDL_Event event;
   while (!realPlatform.quit) {

@@ -243,7 +243,10 @@ struct WAVEChunk {
 #pragma pack(pop)
 
 struct Sound {
-  int16* data;
+  uint8* data;
+  uint8* head;
+
+  uint32 len;
 };
 
 Sound sound_init(void* data, psize len) {
@@ -261,6 +264,7 @@ Sound sound_init(void* data, psize len) {
     advance = 0;
 
     WAVEChunk* chunk = (WAVEChunk*) next;
+    advance = sizeof(*chunk) + chunk->size;
 
     switch (chunk->id) {
       case WAVEChunkID_fmt:
@@ -274,20 +278,18 @@ Sound sound_init(void* data, psize len) {
           assert(fmt->nSamplesPerSec == 48000);
           assert(fmt->wBitsPerSample == 16);
           assert(fmt->nBlockAlign == (sizeof(int16)*fmt->nChannels));
-
-          advance = sizeof(*chunk) + fmt->size;
         } break;
       case WAVEChunkID_data:
         {
           logln("Found data");
 
-          advance = sizeof(chunk->id) + chunk->size;
+          s.data = next + sizeof(*chunk);
+          s.head = s.data;
+          s.len = chunk->size;
         } break;
       default:
         {
           logln("Found other");
-
-          advance = sizeof(chunk->id) + chunk->size;
         } break;
     }
 
