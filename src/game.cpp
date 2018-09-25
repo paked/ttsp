@@ -55,8 +55,13 @@ int game_init(Platform* p) {
 
 #define PLAYER_DRAG (0.50f)
 #define PLAYER_ACCEL (24.0f)
-#define PLAYER_MAX_SPEED (60.0f)
+#define PLAYER_MAX_SPEED_X (60.0f)
+#define PLAYER_MAX_SPEED_Y (300.0f)
 #define PLAYER_REACTIVITY (0.7f)
+
+#define PLAYER_GRAVITY (20.0f)
+#define PLAYER_JUMP_ACCEL_DRAG (0.86f)
+#define PLAYER_JUMP_ACCEL (-80.0f)
 void game_update() {
   assert(platform != 0);
 
@@ -85,40 +90,50 @@ void game_update() {
     } else if (keyDown(KEY_d)) {
       direction = 1.0f;
     } else {
-      g->playerSpeed *= PLAYER_DRAG;
+      g->playerSpeed.x *= PLAYER_DRAG;
     }
 
-    int sign = math_signi(g->playerSpeed);
+    int sign = math_signi(g->playerSpeed.x);
     if (direction != 0) {
       real32 accel = PLAYER_ACCEL * direction;
 
-      g->playerSpeed += accel;
+      g->playerSpeed.x += accel;
 
       if (direction != sign) {
-        g->playerSpeed += accel * PLAYER_REACTIVITY;
+        g->playerSpeed.x += accel * PLAYER_REACTIVITY;
       }
     }
 
-    if (fabs(g->playerSpeed) > PLAYER_MAX_SPEED) {
-      g->playerSpeed = PLAYER_MAX_SPEED * sign;
+    if (fabs(g->playerSpeed.x) > PLAYER_MAX_SPEED_X) {
+      g->playerSpeed.x = PLAYER_MAX_SPEED_X * sign;
     }
 
-    actor_moveX(&g->player, g->playerSpeed * getDeltaTime(), &g->level);
+    actor_moveX(&g->player, g->playerSpeed.x * getDeltaTime(), &g->level);
   }
 
   {
-    real32 amount = 200.0f;
+    g->playerSpeed.y += PLAYER_GRAVITY;
 
-    if (keyJustDown(KEY_space)) {
-      g->jumpAccel = -400.0f;
+    {
+      g->jumpAccel *= PLAYER_JUMP_ACCEL_DRAG;
+      g->playerSpeed.y += g->jumpAccel;
     }
 
-    amount += g->jumpAccel;
+    if (fabs(g->playerSpeed.y) > PLAYER_MAX_SPEED_Y) {
+    int sign = math_signi(g->playerSpeed.y);
+      g->playerSpeed.y = PLAYER_MAX_SPEED_Y * sign;
+    }
 
-    g->jumpAccel *= 0.95f;
+    actor_moveY(&g->player, g->playerSpeed.y * getDeltaTime(), &g->level);
 
-    actor_moveY(&g->player, amount * getDeltaTime(), &g->level);
+    if (g->player.onGround && keyJustDown(KEY_space)) {
+      g->jumpAccel = PLAYER_JUMP_ACCEL;
+
+      g->playerSpeed.y = 0;
+    }
   }
+
+  g->player.onGround = false;
 
   // Render
   draw_virtual_begin();

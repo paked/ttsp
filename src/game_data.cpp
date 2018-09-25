@@ -2,6 +2,8 @@ struct Actor {
   AABB collider;
 
   vec2 remainder;
+
+  bool onGround;
 };
 
 void actor_moveX(Actor* actor, real32 amount, Level* level) {
@@ -49,6 +51,8 @@ void actor_moveY(Actor* actor, real32 amount, Level* level) {
         continue;
       }
 
+      actor->onGround = true;
+
       break;
     }
   }
@@ -56,7 +60,7 @@ void actor_moveY(Actor* actor, real32 amount, Level* level) {
 
 struct GameData {
   Actor player;
-  real32 playerSpeed;
+  vec2 playerSpeed;
   real32 jumpAccel;
 
   Level level;
