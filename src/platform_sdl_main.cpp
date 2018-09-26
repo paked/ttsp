@@ -175,7 +175,7 @@ int main(int argc, char **argv) {
   audioSpec.freq = 48000;
   audioSpec.format = AUDIO_S16;
   audioSpec.channels = 2;
-  audioSpec.samples = 4096;
+  audioSpec.samples = AUDIO_SAMPLE_COUNT;
 
   audioSpec.callback = game_sound;
 

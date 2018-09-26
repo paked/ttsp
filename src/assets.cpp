@@ -244,7 +244,6 @@ struct WAVEChunk {
 
 struct Sound {
   uint8* data;
-  uint8* head;
 
   uint32 len;
 };
@@ -284,7 +283,6 @@ Sound sound_init(void* data, psize len) {
           logln("Found data");
 
           s.data = next + sizeof(*chunk);
-          s.head = s.data;
           s.len = chunk->size;
         } break;
       default:

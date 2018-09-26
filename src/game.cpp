@@ -31,15 +31,17 @@ Platform* platform = 0;
 #define GAME_VIRTUAL_WIDTH (320)
 #define GAME_VIRTUAL_HEIGHT (184)
 
+#include <memory_arena.hpp>
 #include <physics.cpp>
 #include <assets.cpp>
 #include <draw.cpp>
-#include <memory_arena.hpp>
+#include <mixer.cpp>
 
 #include <level.cpp>
 #include <game_data.cpp>
 
 Sound exampleSound = {0};
+Sound exampleSound2 = {0};
 
 int game_init(Platform* p) {
   platform = p;
@@ -49,6 +51,7 @@ int game_init(Platform* p) {
   draw.clear = vec3_black;
 
   exampleSound = sound_load("sound/church.wav");
+  exampleSound2 = sound_load("sound/bloop_00.wav");
 
   return 0;
 }
@@ -72,6 +75,11 @@ void game_update() {
   if (!platform->initialized) {
     // Initialize GameData in here...
     g->player.collider = aabb_init(0, 0, 8, 12);
+
+    mixer_init();
+
+    mixer_playSound(&exampleSound, false, 1.0f);
+    mixer_playSound(&exampleSound2, false, 1.0f);
 
     memoryArena_init(&g->memoryArena,
         platform->permanentStorageSize - sizeof(GameData),
@@ -183,20 +191,5 @@ void game_clean() {
 }
 
 void game_sound(void* userdata, uint8* stream, int len) {
-  if (exampleSound.len == 0) {
-    logln("Finished playing sound...");
-
-    memset(stream, 0, len);
-
-    return;
-  }
-
-  if ((uint32) len > exampleSound.len) {
-    len = exampleSound.len;
-  }
-
-  memcpy(stream, exampleSound.head, len);
-
-  exampleSound.head += len;
-  exampleSound.len -= (uint32) len;
+  mixer_writeAudio((int16*) stream, len / sizeof(uint16));
 }

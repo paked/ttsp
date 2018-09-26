@@ -5,3 +5,5 @@
 
 #define PERMANENT_MEMORY_SIZE (megabytes((uint64) 8))
 #define TRANSIENT_MEMORY_SIZE (megabytes((uint64) 8))
+
+#define AUDIO_SAMPLE_COUNT (4096)
