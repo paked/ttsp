@@ -116,7 +116,10 @@ void game_update() {
 
     {
       g->jumpAccel *= PLAYER_JUMP_ACCEL_DRAG;
-      g->playerSpeed.y += g->jumpAccel;
+
+      if (keyDown(KEY_space)) {
+        g->playerSpeed.y += g->jumpAccel;
+      }
     }
 
     if (fabs(g->playerSpeed.y) > PLAYER_MAX_SPEED_Y) {
